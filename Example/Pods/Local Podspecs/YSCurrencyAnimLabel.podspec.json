@@ -1,0 +1,24 @@
+{
+  "name": "YSCurrencyAnimLabel",
+  "version": "0.1.0",
+  "summary": "A short description of YSCurrencyAnimLabel.",
+  "description": "TODO: Add long description of the pod here.",
+  "homepage": "https://github.com/peanutgao/YSCurrencyAnimLabel",
+  "license": {
+    "type": "MIT",
+    "file": "LICENSE"
+  },
+  "authors": {
+    "peanutgao": "peanutgao@hotmail.com"
+  },
+  "source": {
+    "git": "https://github.com/peanutgao/YSCurrencyAnimLabel.git",
+    "tag": "0.1.0"
+  },
+  "platforms": {
+    "ios": "12.0"
+  },
+  "swift_versions": "5.6",
+  "source_files": "YSCurrencyAnimLabel/Classes/**/*",
+  "swift_version": "5.6"
+}

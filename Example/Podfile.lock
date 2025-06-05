@@ -1,0 +1,16 @@
+PODS:
+  - YSCurrencyAnimLabel (0.1.0)
+
+DEPENDENCIES:
+  - YSCurrencyAnimLabel (from `../`)
+
+EXTERNAL SOURCES:
+  YSCurrencyAnimLabel:
+    :path: "../"
+
+SPEC CHECKSUMS:
+  YSCurrencyAnimLabel: b7862377105aafc648493a6f26dbfd3391ac958c
+
+PODFILE CHECKSUM: 2ef669c35c26d5fbcb764d5ff90f064f39bd731f
+
+COCOAPODS: 1.16.2

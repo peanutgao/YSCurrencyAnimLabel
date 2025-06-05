@@ -1,0 +1,6 @@
+framework module YSCurrencyAnimLabel {
+  umbrella header "YSCurrencyAnimLabel-umbrella.h"
+
+  export *
+  module * { export * }
+}
