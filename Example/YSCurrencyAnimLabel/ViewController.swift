@@ -14,6 +14,8 @@ class ViewController: UIViewController {
 
     @IBOutlet var stepper: UIStepper!
     let label_1 = YSCurrencyAnimLabel()
+    let label_2 = YSCurrencyAnimLabel()
+    let label_3 = YSCurrencyAnimLabel()
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -23,6 +25,8 @@ class ViewController: UIViewController {
         stepper.stepValue = 1
 
         demo_1()
+        demo_2()
+        demo_3()
     }
 
     func demo_1() {
@@ -31,9 +35,49 @@ class ViewController: UIViewController {
         label_1.setCurrency(symbol: "¥")
         label_1.setNumber(number)
         label_1.isCurrency = true
+        label_1.numberFormatter = Formatter.idroNumber
+        label_1.animateAllWhenChanged = false
 
         view.addSubview(label_1)
         label_1.frame = CGRect(x: 20, y: 100, width: 300, height: 35)
+    }
+
+    func demo_2() {
+        label_2.textColor = .systemRed
+        label_2.backgroundColor = .lightGray
+        label_2.setCurrency(symbol: "$")
+        label_2.setNumber(number)
+        label_2.isCurrency = true
+        label_2.numberFormatter = Formatter.idroNumber
+        label_2.animateAllWhenChanged = true
+
+        view.addSubview(label_2)
+        label_2.frame = CGRect(x: 20, y: 160, width: 300, height: 35)
+    }
+
+
+    func demo_3() {
+        // 演示 NumberFormatter 修复：先设置数字，后设置格式化器
+        label_3.textColor = .systemRed
+        label_3.backgroundColor = .lightGray
+        label_3.setCurrency(symbol: "$")
+        label_3.isCurrency = true
+        label_3.animateAllWhenChanged = false
+
+        // 先设置数字
+        label_3.setNumber(number)
+
+        // 后设置 NumberFormatter - 这里应该会自动重新格式化显示
+        label_3.numberFormatter = Formatter.idroNumber
+
+        view.addSubview(label_3)
+        label_3.translatesAutoresizingMaskIntoConstraints = false
+
+        NSLayoutConstraint.activate([
+            label_3.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            label_3.topAnchor.constraint(equalTo: label_2.bottomAnchor, constant: 20),
+            label_3.heightAnchor.constraint(equalToConstant: 35)
+        ])
     }
 
     @IBAction func valueChanged(_ sender: UIStepper) {
@@ -46,10 +90,17 @@ class ViewController: UIViewController {
         }
 
         label_1.setNumber(newValue)
+        label_2.setNumber(newValue)
+        label_3.setNumber(newValue)
     }
+}
 
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
-    }
+public extension Formatter {
+    static let idroNumber: NumberFormatter = {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.groupingSeparator = "."
+        formatter.decimalSeparator = ","
+        return formatter
+    }()
 }
