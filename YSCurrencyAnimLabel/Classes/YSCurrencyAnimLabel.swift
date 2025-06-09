@@ -12,7 +12,7 @@ import UIKit
 
 public class YSCurrencyAnimLabel: UILabel {
     public var isCurrency = true
-    public var showSymbol = true
+    public var isShowSymbol = false
     public var numberFormatter: NumberFormatter = .init() {
         didSet {
             // Automatically re-format the display when formatter changes if content exists
@@ -110,7 +110,7 @@ private extension YSCurrencyAnimLabel {
             xPos = frameW - textW
         }
 
-        if showSymbol {
+        if isShowSymbol {
             let symbolLabel = createScrollLabel(text: "\(currSymbol) ", origin: CGPoint(x: xPos, y: yPos))
             addSubview(symbolLabel)
             xPos += symbolLabel.bounds.width
@@ -155,7 +155,7 @@ private extension YSCurrencyAnimLabel {
             xPos = frameW - textW
         }
 
-        if showSymbol {
+        if isShowSymbol {
             let symbolLabel = createScrollLabel(text: "\(currSymbol) ", origin: CGPoint(x: xPos, y: yPos))
             addSubview(symbolLabel)
             xPos += symbolLabel.bounds.width
@@ -276,7 +276,7 @@ private extension YSCurrencyAnimLabel {
     }
 
     func getText() -> String {
-        if showSymbol {
+        if isShowSymbol {
             "\(currSymbol) \(fullText)"
         } else {
             fullText
