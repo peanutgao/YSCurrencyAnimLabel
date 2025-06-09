@@ -57,17 +57,14 @@ class ViewController: UIViewController {
 
 
     func demo_3() {
-        // 演示 NumberFormatter 修复：先设置数字，后设置格式化器
         label_3.textColor = .systemRed
         label_3.backgroundColor = .lightGray
         label_3.setCurrency(symbol: "$")
         label_3.isCurrency = true
         label_3.animateAllWhenChanged = false
 
-        // 先设置数字
         label_3.setNumber(number)
 
-        // 后设置 NumberFormatter - 这里应该会自动重新格式化显示
         label_3.numberFormatter = Formatter.idroNumber
 
         view.addSubview(label_3)

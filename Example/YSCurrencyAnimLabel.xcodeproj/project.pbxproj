@@ -28,7 +28,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		0FB533FAF8B7AA779741EE16 /* YSCurrencyAnimLabel.podspec */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = YSCurrencyAnimLabel.podspec; path = ../YSCurrencyAnimLabel.podspec; sourceTree = "<group>"; };
+		0FB533FAF8B7AA779741EE16 /* YSCurrencyAnimLabel.podspec */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = YSCurrencyAnimLabel.podspec; path = ../YSCurrencyAnimLabel.podspec; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
 		16A938A47A508B21F3942840 /* Pods_YSCurrencyAnimLabel_Tests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_YSCurrencyAnimLabel_Tests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		45CE53D3797505EF7EC41A67 /* Pods-YSCurrencyAnimLabel_Example.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-YSCurrencyAnimLabel_Example.release.xcconfig"; path = "Target Support Files/Pods-YSCurrencyAnimLabel_Example/Pods-YSCurrencyAnimLabel_Example.release.xcconfig"; sourceTree = "<group>"; };
 		607FACD01AFB9204008FA782 /* YSCurrencyAnimLabel_Example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = YSCurrencyAnimLabel_Example.app; sourceTree = BUILT_PRODUCTS_DIR; };
