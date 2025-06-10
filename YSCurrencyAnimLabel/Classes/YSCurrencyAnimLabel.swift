@@ -5,8 +5,16 @@
 //  Created by Joseph on 2025/6/5.
 //
 
-import QuartzCore
 import UIKit
+
+// MARK: - Vertical Alignment
+
+/// Vertical alignment options for the currency animation label
+public enum YSVerticalAlignment {
+    case top
+    case center
+    case bottom
+}
 
 // MARK: - YSCurrencyAnimLabel
 
@@ -22,6 +30,15 @@ public class YSCurrencyAnimLabel: UILabel {
         didSet {
             if prevNumber != 0, !areFormattersEqual(oldValue, numberFormatter) {
                 refreshDisplayWithoutAnimation()
+            }
+        }
+    }
+
+    /// Vertical alignment for the text content
+    public var verticalAlignment: YSVerticalAlignment = .center {
+        didSet {
+            if oldValue != verticalAlignment {
+                updatePositionsOnly()
             }
         }
     }
@@ -67,24 +84,34 @@ public class YSCurrencyAnimLabel: UILabel {
         prevNumber = num
     }
 
+    /// Convenience method to set currency symbol and enable symbol display
+    public func setCurrency(symbol: String) {
+        currSymbol = symbol
+        isShowSymbol = true
+    }
+
     override public init(frame: CGRect) {
         super.init(frame: frame)
         textColor = .clear
     }
 
-    @available(*, unavailable)
-    required init?(coder _: NSCoder) {
+    required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-}
 
-private extension YSCurrencyAnimLabel {
+    override public func layoutSubviews() {
+        super.layoutSubviews()
+
+        if !subviews.filter({ $0.tag != 8898 }).isEmpty || !scrollLayers.isEmpty {
+            updatePositionsOnly()
+        }
+    }
     func refreshDisplayWithoutAnimation() {
         guard prevNumber != 0 else {
+            clean()
             return
         }
 
-        // Re-format text
         if isCurrency {
             fullText = currencyString(from: prevNumber)
         } else {
@@ -93,15 +120,18 @@ private extension YSCurrencyAnimLabel {
 
         text = getText()
 
-        // Clear existing subviews and layers
         clean()
+
+        guard !fullText.isEmpty else { return }
 
         // Recreate display content without animation
         let strArray = fullText.map { String($0) }
         var xPos: CGFloat = 0
-        let yPos: CGFloat = 0
         let frameW = bounds.size.width
         let textW = textWidth()
+
+        let textHeight = getTextHeight()
+        let yPos = calculateVerticalPosition(for: textHeight)
 
         if textAlignment == .center {
             xPos = (frameW - textW) / 2
@@ -138,15 +168,24 @@ private extension YSCurrencyAnimLabel {
 }
 
 private extension YSCurrencyAnimLabel {
+    enum AnimationType {
+        case none // No animation (identical digits or separators)
+        case scroll // Scroll animation (0-9-0 effect for unchanged digits)
+        case change // Change animation (digits that actually changed)
+    }
+
     func updateSubviews(prevNum: Int64 = 0, currNum: Int64) {
         clean()
 
         layoutIfNeeded()
         let strArray = fullText.map { String($0) }
         var xPos: CGFloat = 0
-        let yPos: CGFloat = 0
         let frameW = bounds.size.width
         let textW = textWidth() // getTextSize(for: getText(), with: font).width
+
+        let textHeight = getTextHeight()
+        let yPos = calculateVerticalPosition(for: textHeight)
+
         if textAlignment == .center {
             xPos = (frameW - textW) / 2
 
@@ -183,12 +222,6 @@ private extension YSCurrencyAnimLabel {
         }
     }
 
-    enum AnimationType {
-        case none // No animation (identical digits or separators)
-        case scroll // Scroll animation (0-9-0 effect for unchanged digits)
-        case change // Change animation (digits that actually changed)
-    }
-
     func calculateAnimationFlags(
         strArray: [String],
         prevNum: Int64,
@@ -198,9 +231,10 @@ private extension YSCurrencyAnimLabel {
         let prevFormattedArr = prevFormattedStr.map { String($0) }
 
         var animTypes: [AnimationType] = []
-        var hasChanged = false
-        var changePos: Set<Int> = [] // Record positions that changed
+        var didAnyDigitChange = false // Renamed from hasChanged for clarity
+        var changedDigitIndices: Set<Int> = [] // Renamed from changePos for clarity
 
+        // First pass: Determine initial animation types and identify changed positions
         for (index, char) in strArray.enumerated() {
             // If it's a non-digit character (like comma, decimal point), no animation
             if nonAnimTexts.contains(char) {
@@ -209,18 +243,18 @@ private extension YSCurrencyAnimLabel {
             }
 
             // Check if current position has changed
-            let isChanged: Bool
+            let isActualChange: Bool
             if index < prevFormattedArr.count {
                 let prevChar = prevFormattedArr[index]
-                isChanged = char != prevChar
+                isActualChange = char != prevChar
             } else {
-                // New digit position, consider it as changed
-                isChanged = true
+                // New digit position (e.g., number length increases), consider it as changed
+                isActualChange = true
             }
 
-            if isChanged {
-                hasChanged = true
-                changePos.insert(index)
+            if isActualChange {
+                didAnyDigitChange = true
+                changedDigitIndices.insert(index)
                 animTypes.append(.change)
             } else {
                 // For unchanged digit positions, temporarily set to no animation
@@ -228,42 +262,49 @@ private extension YSCurrencyAnimLabel {
             }
         }
 
-        // Step 2: Decide animation type for unchanged digits based on strategy
-        if hasChanged {
+        // Decide animation type for unchanged digits based on strategy
+        if didAnyDigitChange {
             if animateAllWhenChanged {
                 for index in 0 ..< animTypes.count {
                     let char = strArray[index]
-                    if !nonAnimTexts.contains(char) {
+                    if !nonAnimTexts.contains(char) { // Ensure it's a digit/number part
                         animTypes[index] = .change
                     }
+                    // Separators remain .none
                 }
             } else {
-                // When animateAllWhenChanged = false, apply special logic
+                // When animateAllWhenChanged = false, apply special logic:
+                // - Directly changed digits get .change.
+                // - Unchanged digits to the right of the *first* changed digit get .scroll.
+                // - Other unchanged digits (left of first change, or if no change) get .none.
 
-                // Find the highest position that changed
-                let highestPos = changePos.min() ?? -1
+                // Since didAnyDigitChange is true, changedDigitIndices is not empty.
+                let leftmostChangedIndex = changedDigitIndices.min()! // Safe to unwrap
 
                 for index in 0 ..< animTypes.count {
                     let char = strArray[index]
 
-                    // Skip separators
+                    // Skip separators (already .none)
                     if nonAnimTexts.contains(char) {
                         continue
                     }
 
-                    if !changePos.contains(index) {
-                        if index > highestPos {
-                            // For unchanged digits to the right of changed position, show scroll animation
+                    // Consider only digits that were not directly changed
+                    if !changedDigitIndices.contains(index) {
+                        if index > leftmostChangedIndex {
+                            // For unchanged digits to the right of the leftmost changed position, show scroll animation
                             animTypes[index] = .scroll
                         } else {
-                            // For unchanged digits to the left of or at changed position, no animation
+                            // For unchanged digits to the left of (or at, though covered by !contains)
+                            // the leftmost changed position, no animation (it's already .none)
                             animTypes[index] = .none
                         }
                     }
+                    // If changedDigitIndices.contains(index), it's already .change and correctly stays so.
                 }
             }
         }
-
+        // If !didAnyDigitChange, all animTypes are already .none (correct for no changes).
         return animTypes
     }
 
@@ -288,13 +329,62 @@ private extension YSCurrencyAnimLabel {
 
     func createScrollLabel(text: String, origin: CGPoint) -> UILabel {
         let label = UILabel()
-        label.frame.origin = origin
         label.textColor = amountColor
         label.font = font
         label.text = text
         label.textAlignment = .center
-        label.sizeToFit()
+
+        // Calculate the text size
+        let textSize = (text as NSString).size(withAttributes: [.font: font!])
+
+        label.frame = CGRect(
+            x: origin.x,
+            y: origin.y,
+            width: textSize.width,
+            height: textSize.height
+        )
+
         return label
+    }
+
+    /// Calculate the vertical position based on the vertical alignment setting
+    func calculateVerticalPosition(for labelHeight: CGFloat) -> CGFloat {
+        let frameHeight = bounds.size.height
+
+        switch verticalAlignment {
+        case .top:
+            return 0
+        case .center:
+            return (frameHeight - labelHeight) / 2
+        case .bottom:
+            return frameHeight - labelHeight
+        }
+    }
+
+    private func getTextHeight() -> CGFloat {
+        return font.lineHeight
+    }
+
+    /// Update only the position of existing subviews without animation
+    func updatePositionsOnly() {
+        guard prevNumber != 0, !fullText.isEmpty else { return }
+
+        let textHeight = getTextHeight()
+        let yPos = calculateVerticalPosition(for: textHeight)
+
+        // Update positions of all subviews
+        for subview in subviews where subview.tag != 8898 {
+            var frame = subview.frame
+            frame.origin.y = yPos
+            subview.frame = frame
+        }
+
+        // Update positions of all scroll layers
+        for scrollLayer in scrollLayers {
+            var frame = scrollLayer.frame
+            frame.origin.y = yPos
+            scrollLayer.frame = frame
+        }
     }
 
     func createScrollLayer(to label: UILabel, text: String, shouldAnim: Bool = true) {

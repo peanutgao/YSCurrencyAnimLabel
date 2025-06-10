@@ -37,9 +37,10 @@ class ViewController: UIViewController {
         label_1.isCurrency = true
         label_1.numberFormatter = Formatter.idroNumber
         label_1.animateAllWhenChanged = false
+        label_1.verticalAlignment = .top
 
         view.addSubview(label_1)
-        label_1.frame = CGRect(x: 20, y: 100, width: 300, height: 35)
+        label_1.frame = CGRect(x: 20, y: 100, width: 300, height: 50)
     }
 
     func demo_2() {
@@ -50,9 +51,10 @@ class ViewController: UIViewController {
         label_2.isCurrency = true
         label_2.numberFormatter = Formatter.idroNumber
         label_2.animateAllWhenChanged = true
+        label_2.verticalAlignment = .center
 
         view.addSubview(label_2)
-        label_2.frame = CGRect(x: 20, y: 160, width: 300, height: 35)
+        label_2.frame = CGRect(x: 20, y: 170, width: 300, height: 50)
     }
 
 
@@ -62,6 +64,7 @@ class ViewController: UIViewController {
         label_3.setCurrency(symbol: "$")
         label_3.isCurrency = true
         label_3.animateAllWhenChanged = false
+        label_3.verticalAlignment = .bottom
 
         label_3.setNumber(number)
 
@@ -73,7 +76,7 @@ class ViewController: UIViewController {
         NSLayoutConstraint.activate([
             label_3.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             label_3.topAnchor.constraint(equalTo: label_2.bottomAnchor, constant: 20),
-            label_3.heightAnchor.constraint(equalToConstant: 35)
+            label_3.heightAnchor.constraint(equalToConstant: 50)
         ])
     }
 
