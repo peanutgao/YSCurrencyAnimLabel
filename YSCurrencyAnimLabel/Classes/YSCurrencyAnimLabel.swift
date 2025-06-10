@@ -13,9 +13,13 @@ import UIKit
 public class YSCurrencyAnimLabel: UILabel {
     public var isCurrency = true
     public var isShowSymbol = false
+    public var currSymbol: String = "$" {
+        didSet {
+            refreshDisplayWithoutAnimation()
+        }
+    }
     public var numberFormatter: NumberFormatter = .init() {
         didSet {
-            // Automatically re-format the display when formatter changes if content exists
             if prevNumber != 0, !areFormattersEqual(oldValue, numberFormatter) {
                 refreshDisplayWithoutAnimation()
             }
@@ -30,7 +34,6 @@ public class YSCurrencyAnimLabel: UILabel {
     public private(set) var fullText = ""
 
     private var amountColor: UIColor = .black
-    private var currSymbol: String = "$"
     private var scrollLayers: [CAScrollLayer] = []
     private var scrollLabels: [UILabel] = []
     private let duration = 0.7
@@ -72,10 +75,6 @@ public class YSCurrencyAnimLabel: UILabel {
     @available(*, unavailable)
     required init?(coder _: NSCoder) {
         fatalError("init(coder:) has not been implemented")
-    }
-
-    public func setCurrency(symbol: String) {
-        currSymbol = symbol
     }
 }
 
@@ -174,13 +173,10 @@ private extension YSCurrencyAnimLabel {
 
             switch animType {
             case .none:
-                // No animation, use static label
                 addSubview(label)
             case .scroll:
-                // Scroll animation (0-9-0 effect for unchanged digits)
                 createScrollLayer(to: label, text: text, shouldAnim: false)
             case .change:
-                // Change animation (digits that actually changed)
                 createScrollLayer(to: label, text: text, shouldAnim: true)
             }
             xPos += floor(label.bounds.width)
@@ -198,7 +194,6 @@ private extension YSCurrencyAnimLabel {
         prevNum: Int64,
         currNum: Int64
     ) -> [AnimationType] {
-        // Get formatted previous number string (including thousand separators, etc.)
         let prevFormattedStr = isCurrency ? currencyString(from: prevNum) : String(prevNum)
         let prevFormattedArr = prevFormattedStr.map { String($0) }
 
@@ -206,7 +201,6 @@ private extension YSCurrencyAnimLabel {
         var hasChanged = false
         var changePos: Set<Int> = [] // Record positions that changed
 
-        // Step 1: Determine which positions have changed
         for (index, char) in strArray.enumerated() {
             // If it's a non-digit character (like comma, decimal point), no animation
             if nonAnimTexts.contains(char) {
@@ -237,7 +231,6 @@ private extension YSCurrencyAnimLabel {
         // Step 2: Decide animation type for unchanged digits based on strategy
         if hasChanged {
             if animateAllWhenChanged {
-                // When animateAllWhenChanged = true, all digits show change animation
                 for index in 0 ..< animTypes.count {
                     let char = strArray[index]
                     if !nonAnimTexts.contains(char) {
@@ -258,7 +251,6 @@ private extension YSCurrencyAnimLabel {
                         continue
                     }
 
-                    // If this position hasn't changed
                     if !changePos.contains(index) {
                         if index > highestPos {
                             // For unchanged digits to the right of changed position, show scroll animation
