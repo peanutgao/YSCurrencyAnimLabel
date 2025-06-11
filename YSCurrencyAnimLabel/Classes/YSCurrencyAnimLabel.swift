@@ -71,7 +71,7 @@ public class YSCurrencyAnimLabel: UILabel {
         }
     }
 
-    public func setNumber(_ num: Int64) {
+    public func setNumber(_ num: Int64, animated: Bool = true) {
         if isCurrency {
             fullText = currencyString(from: num)
         } else {
@@ -80,7 +80,9 @@ public class YSCurrencyAnimLabel: UILabel {
 
         text = getText()
         updateSubviews(prevNum: prevNumber, currNum: num)
-        animate()
+        if animated {
+            animate()
+        }
         prevNumber = num
     }
 
